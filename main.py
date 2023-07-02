@@ -17,7 +17,6 @@ iptables_manager = IPTablesManager()
 
 logging.basicConfig(filename='app.log', level=logging.INFO)
 
-@app.before_first_request
 def create_tables() -> None:
     """Create all tables in the database."""
     db.create_all()

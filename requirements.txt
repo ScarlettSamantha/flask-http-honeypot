@@ -1,0 +1,7 @@
+flask==2.0.1
+flask_sqlalchemy==2.5.1
+geoip2
+gunicorn==20.1.0
+psycopg2-binary==2.9.1
+python-geoip-geolite2
+click

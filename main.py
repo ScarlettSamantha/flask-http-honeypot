@@ -5,17 +5,33 @@ from geoip import geolite2
 import os
 import logging
 from datetime import datetime
-from models import BlockedIP, RequestLog
 from iptables_manager import IPTablesManager
 from vulnerable_urls import vulnerable_urls
 from ipaddress import ip_address, IPv4Network
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/app.db'
 db = SQLAlchemy(app)
 iptables_manager = IPTablesManager()
 
 logging.basicConfig(filename='app.log', level=logging.INFO)
+
+class BlockedIP(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50), unique=True, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    request_id = db.Column(db.Integer, db.ForeignKey('request_log.id'), nullable=False)
+
+class RequestLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    url = db.Column(db.String(500), nullable=False)
+    headers = db.Column(db.String(500), nullable=False)
+    cookies = db.Column(db.String(500), nullable=False)
+    country = db.Column(db.String(100), nullable=False)
+    blocked_ips = db.relationship('BlockedIP', backref='request', lazy=True)
+
 
 def create_tables() -> None:
     """Create all tables in the database."""
@@ -24,6 +40,7 @@ def create_tables() -> None:
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path: str) -> tuple:
+    print("hey")
     """
     Catch all route that logs all incoming requests and blocks any IP that tries to access a suspicious URL.
 

@@ -6,6 +6,7 @@ services:
     command: gunicorn main:app -b 0.0.0.0:8000
     volumes:
       - .:/app
+      - ./app.db:/app/app.db
     network_mode: host
     environment:
       - FLASK_ENV=development
